@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -24,6 +25,7 @@ type LDASHDownloadHandler struct {
 }
 
 func (l *LDASHDownloadHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	fmt.Println("here")
 	if strings.HasSuffix(req.URL.EscapedPath(), "html") {
 		l.servePlayer(w, req)
 	} else {

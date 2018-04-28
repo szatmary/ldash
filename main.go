@@ -44,10 +44,10 @@ func main() {
 	// open a thread to clean expired segments
 	//go utils.CheckExpire(args[0])
 
-	r := mux.NewRouter()
-	r.Handle("/ldash/upload/*", ldash_uploadHandler)
-	r.Handle("/ldash/download/*", ldash_downloadHandler)
-	http.Handle("/", r)
-
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	r := mux.NewRouter()	
+	r.Handle("/ldash/upload/{name:[a-zA-Z0-9/._]+}", ldash_uploadHandler)
+	r.Handle("/ldash/download/{name:[a-zA-Z0-9/._]+}", ldash_downloadHandler)
+	
+	fmt.Println("start server")
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
