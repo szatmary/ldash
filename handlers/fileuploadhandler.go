@@ -12,18 +12,18 @@ import (
 )
 
 // UploadHandler handles for http upload
-type LDASHUploadHandler struct {
+type FileUploadHandler struct {
 	BaseDir string
 }
 
-func (u *LDASHUploadHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (u *FileUploadHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	utils.GetUploadLogger().Infof("Received upload request\n")
 	curFileURL := req.URL.EscapedPath()[len("/ldash/upload"):]
 	curFilePath := path.Join(u.BaseDir, curFileURL)
 	u.serveHTTPImpl(curFilePath, w, req)
 }
 
-func (u *LDASHUploadHandler) serveHTTPImpl(curFilePath string, w http.ResponseWriter, req *http.Request) {
+func (u *FileUploadHandler) serveHTTPImpl(curFilePath string, w http.ResponseWriter, req *http.Request) {
 
 	// rewrite, mostly for manifest
 	if _, err := os.Stat(curFilePath); err == nil {

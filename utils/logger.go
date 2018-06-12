@@ -26,3 +26,7 @@ func GetUploadLogger() loggo.Logger {
 func GetDownloadLogger() loggo.Logger {
 	return getLogger("Download")
 }
+
+func GetGCloadLogger() loggo.Logger {
+	return getLogger("GC")
+}
