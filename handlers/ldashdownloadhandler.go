@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -9,14 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"../utils"
 	"github.com/fujiwara/shapeio"
-	"github.com/juju/loggo"
-	//"github.com/gorilla/mux"
-	//"github.com/grafov/m3u8"
-	//"github.com/rs/cors"
 )
-
-var logger = loggo.GetLogger("ldash_download")
 
 // LDASHDownloadHandler handles the lhls fetching
 type LDASHDownloadHandler struct {
@@ -25,7 +19,7 @@ type LDASHDownloadHandler struct {
 }
 
 func (l *LDASHDownloadHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	fmt.Println("here")
+	utils.GetDownloadLogger().Infof("Received download request\n")
 	if strings.HasSuffix(req.URL.EscapedPath(), "html") {
 		l.servePlayer(w, req)
 	} else {
@@ -43,13 +37,13 @@ func (l *LDASHDownloadHandler) serveDownload(w http.ResponseWriter, req *http.Re
 	curFilePath := path.Join(l.getSourcePath(req), curFileURL)
 	file, err := os.Open(curFilePath) // For read access.
 	if err != nil {
-		logger.Errorf("Failed to open file: %v \n", err)
+		utils.GetDownloadLogger().Errorf("Failed to open file: %v \n", err)
 		http.NotFound(w, req)
 		return
 	}
 	defer file.Close()
 
-	logger.Debugf("file %s was downloaded @ %v \n", curFileURL, time.Now().Format(time.RFC3339))
+	utils.GetDownloadLogger().Debugf("file %s was downloaded @ %v \n", curFileURL, time.Now().Format(time.RFC3339))
 
 	w.Header().Set("Content-Type", "video/MP2T")
 	w.Header().Set("Access-Control-Allow-Origin", "*")

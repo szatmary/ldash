@@ -12,9 +12,11 @@ Manifest: "http://{yourdomain}:8080/ldash/upload/{filepath}"
 Segment: "http://{yourdomain}:8080/ldash/upload/{filepath}"
 
 You can test those endpoint with 
-curl http://localhost:8080/ldash/upload/2550/720p/123.ts --upload-file $anyfile
+curl http://localhost:8080/ldash/upload/2550/720p/123.mpd --upload-file $anyfile
 
 ## 3. check download
 you can also check the download endpoint
 "http://{yourdomain}:8080/ldash/download/{filepath}"
 
+You can test those endpoint with 
+curl http://localhost:8080/ldash/upload/2550/720p/123.mpd 
