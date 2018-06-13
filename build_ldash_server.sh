@@ -12,6 +12,6 @@ sudo apt-get install -y golang-go
 
 export GOPATH=$HOME/go export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 
-go get -d -v ...
+go get -d -v .
 
 mkdir www
