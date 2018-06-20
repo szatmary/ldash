@@ -27,6 +27,10 @@ func GetDownloadLogger() loggo.Logger {
 	return getLogger("Download")
 }
 
+func GetPlayerLogger() loggo.Logger {
+	return getLogger("Player")
+}
+
 func GetGCloadLogger() loggo.Logger {
 	return getLogger("GC")
 }

@@ -49,7 +49,7 @@ Go to the directory and build the code
 
 Then run it with fun
 
-	go run main.go "./www"
+	sudo go run main.go "./www/"
 
 And you will see the console output as below
 ![workflow](https://drive.google.com/uc?export=view&id=12abAkLz-dTZm4VbiBaGH9B_c4jO2F7iX)
@@ -61,7 +61,7 @@ If you need an IDE, normally I use [microsoft visual studio code](https://code.v
 
 After the server is running, following endpoints will be open.
 Upload Endpoint:
->  http://{yourdomain}:8080/ldash/upload/{filepath}    
+>  http://{yourdomain}:8080/ldash/upload/{folderpath}/{manifest}    
 
 Example: 
 
@@ -69,11 +69,19 @@ Example:
 
 
 Download Endpoint:
->  http://{yourdomain}:8080/ldash/download/{filepath}
+>  http://{yourdomain}:8080/ldash/download/{folderpath}/{manifest}
 
 Example:
 
 	 curl http://localhost:8080/ldash/download/2550/720p/123.mpd 
+
+
+Play Endpoint:
+>  http://{yourdomain}:8080/ldash/play/{folderpath}/{manifest}
+
+Example:
+
+	 curl http://localhost:8080/ldash/play/2550/720p/123.mpd 
 
 
 ## Things to know

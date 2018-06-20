@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
-	"path"
+	"path/filepath"
 	"time"
 
 	"./handlers"
@@ -20,29 +20,37 @@ func main() {
 		return
 	}
 
-	utils.GetMainLogger().Infof("baseDir %s \n", args[0])
+	filePath, err := filepath.Abs(args[0])
+	if err != nil {
+		utils.GetMainLogger().Errorf("Cannot resolve this path %s\n", filePath)
+		return
+	}
+
+	utils.GetMainLogger().Infof("baseDir %v \n", filePath)
 
 	// clean the segment folder
 	utils.RemoveContents(args[0])
 
 	file_downloadHandler := &handlers.FileDownloadHandler{
 		StartTime: time.Now(),
-		BaseDir:   path.Dir(args[0]),
+		BaseDir:   filePath,
 	}
 
 	file_uploadHandler := &handlers.FileUploadHandler{
-		BaseDir: path.Dir(args[0]),
+		BaseDir: filePath,
 	}
 
-	dash_playHandler := &handlers.DashPlayHandler{}
+	dash_playHandler := &handlers.DashPlayHandler{
+		BaseDir: filePath,
+	}
 
 	// open a thread to clean expired files
-	go utils.CheckExpire(args[0])
+	//go utils.CheckExpire(args[0])
 
 	r := mux.NewRouter()
-	r.Handle("/ldash/upload/{name:[a-zA-Z0-9/._-]+}", file_uploadHandler)
-	r.Handle("/ldash/download/{name:[a-zA-Z0-9/._-]+}", file_downloadHandler)
-	r.Handle("/ldash/play/{videoid}.html", dash_playHandler)
+	r.Handle("/ldash/upload/{folder}/{name:[a-zA-Z0-9/_-]+}.{name:[a-zA-Z0-9/_-]+}", file_uploadHandler)
+	r.Handle("/ldash/download/{folder}/{name:[a-zA-Z0-9/_-]+}.{name:[a-zA-Z0-9/_-]+}", file_downloadHandler)
+	r.Handle("/ldash/play/{folder}/{name:[a-zA-Z0-9/_-]+}.{name:[a-zA-Z0-9/_-]+}", dash_playHandler)
 
 	utils.GetMainLogger().Infof("start server\n")
 	log.Fatal(http.ListenAndServe(":8080", r))
