@@ -81,7 +81,7 @@ Play Endpoint:
 
 Example:
 
-	 curl http://localhost:8080/ldash/play/2550/720p/123.mpd 
+	 put this into your browser http://localhost:8080/ldash/play/2550/720p/123.mpd 
 
 
 ## Things to know
