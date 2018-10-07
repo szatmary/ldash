@@ -40,6 +40,8 @@ func (l *FileDownloadHandler) serveDownload(w http.ResponseWriter, req *http.Req
 
 	w.Header().Set("Content-Type", "video/MP2T")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Transfer-Encoding", "chunked")
+	w.Header().Set("Connection", "Keep-Alive")
 	w.WriteHeader(http.StatusOK)
 
 	writer := shapeio.NewWriter(w)
