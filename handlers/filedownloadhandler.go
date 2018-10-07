@@ -41,10 +41,35 @@ func (l *FileDownloadHandler) serveDownload(w http.ResponseWriter, req *http.Req
 	w.Header().Set("Content-Type", "video/MP2T")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Transfer-Encoding", "chunked")
-	w.Header().Set("Connection", "Keep-Alive")
-	w.WriteHeader(http.StatusOK)
+	//w.Header().Set("Connection", "Keep-Alive")
 
+	w.WriteHeader(http.StatusOK)
 	writer := shapeio.NewWriter(w)
-	io.Copy(writer, file)
-	return
+	bufferSize := 2048
+
+	buffer := make([]byte, bufferSize)
+
+	for {
+		for {
+			bytesread, err := file.Read(buffer)
+
+			if bytesread > 0 {
+				_, errpr := writer.Write(buffer[:bufferSize])
+				if errpr != nil {
+					panic(err)
+				}
+			}
+
+			if bytesread != bufferSize {
+				break
+			}
+		}
+
+		if err != nil {
+			if err == io.EOF { // break out if reach to the file end
+				break
+			}
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
 }
