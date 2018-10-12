@@ -47,16 +47,28 @@ func (u *FileUploadHandler) serveHTTPImpl(curFolderPath string, curFilePath stri
 	}
 
 	// create, mostly for segment
+	// for segment, we will allow partial downloading during the uploading. So we use Symlink as a signal to
+	// tell download handler whether the download is finished.
+
 	f, rerr := os.Create(curFilePath)
 	if rerr != nil {
 		utils.GetUploadLogger().Errorf("fail to create file %s : %v\n", curFilePath, rerr)
 		return
 	}
+
 	utils.GetUploadLogger().Debugf("create file %s @ %v \n", curFilePath, time.Now().Format(time.RFC3339))
 	defer f.Close()
+
+	symlink := curFilePath + ".symlink"
+	os.Symlink(curFilePath, symlink)
+	utils.GetUploadLogger().Debugf("create symlink %s @ %v \n", symlink, time.Now().Format(time.RFC3339))
+
 	_, rerr = io.Copy(f, req.Body)
 	if rerr != nil {
 		utils.GetUploadLogger().Errorf("fail to create file %v \n", rerr)
 	}
-	utils.GetUploadLogger().Debugf("write file %s @ %v \n", curFilePath, time.Now().Format(time.RFC3339))
+
+	os.Readlink(symlink)
+	utils.GetUploadLogger().Debugf("remove symlink %s @ %v \n", symlink, time.Now().Format(time.RFC3339))
+
 }

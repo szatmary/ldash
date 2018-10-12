@@ -1,13 +1,14 @@
 package handlers
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path"
+	"strings"
 	"time"
-        "strings"
-	"fmt"
+
 	"../utils"
 	"github.com/fujiwara/shapeio"
 )
@@ -24,6 +25,16 @@ func (l *FileDownloadHandler) ServeHTTP(w http.ResponseWriter, req *http.Request
 
 func (l *FileDownloadHandler) getSourcePath(req *http.Request) string {
 	return l.BaseDir
+}
+
+func (l *FileDownloadHandler) isFileUploadingDone(file string) bool {
+	symlink := file + ".symlink"
+	if _, err := os.Stat(symlink); err == nil {
+		// exist
+		return true
+	}
+	// not exist
+	return false
 }
 
 func (l *FileDownloadHandler) serveDownload(w http.ResponseWriter, req *http.Request) {
@@ -43,15 +54,15 @@ func (l *FileDownloadHandler) serveDownload(w http.ResponseWriter, req *http.Req
 	w.Header().Set("Transfer-Encoding", "chunked")
 	w.Header().Set("Connection", "Keep-Alive")
 
-        if strings.HasSuffix(curFilePath, ".mpd") {
-                w.Header().Set("Content-Type", "application/dash+xml")
-        } else {
-        	w.Header().Set("Content-Type", "video/MP4")
+	if strings.HasSuffix(curFilePath, ".mpd") {
+		w.Header().Set("Content-Type", "application/dash+xml")
+	} else {
+		w.Header().Set("Content-Type", "video/MP4")
 	}
 
 	w.WriteHeader(http.StatusOK)
-	
-        writer := shapeio.NewWriter(w)
+
+	writer := shapeio.NewWriter(w)
 
 	if strings.HasSuffix(curFilePath, ".mpd") { // we don't do chunkced download for manifest
 		utils.GetDownloadLogger().Debugf("download manifest file \n")
@@ -62,22 +73,21 @@ func (l *FileDownloadHandler) serveDownload(w http.ResponseWriter, req *http.Req
 	bufferSize := 20480
 
 	buffer := make([]byte, bufferSize)
-        var read_err error
-        bytesread := 0
+	var read_err error
+	bytesread := 0
 	for {
 		for {
 			bytesread, read_err = file.Read(buffer)
 			if read_err != nil {
-                                 utils.GetDownloadLogger().Errorf("check: %v \n", read_err)
 				if read_err != io.EOF { // print out if read error
 					utils.GetDownloadLogger().Errorf("Failed to read file: %v \n", err)
 				}
 			}
 
-                        utils.GetDownloadLogger().Debugf("read %d bytes \n", bytesread)
+			utils.GetDownloadLogger().Debugf("read %d bytes \n", bytesread)
 
 			if bytesread > 0 {
-				prefix := fmt.Sprintf("%d\r\n", bytesread)
+				prefix := fmt.Sprintf("%x\r\n", bytesread)
 				init := []byte(prefix)
 				end := []byte("\r\n")
 				new_data := append(init, buffer...)
@@ -89,13 +99,14 @@ func (l *FileDownloadHandler) serveDownload(w http.ResponseWriter, req *http.Req
 			}
 
 			if bytesread != bufferSize {
-                                utils.GetDownloadLogger().Debugf("read all existing data \n")
+				utils.GetDownloadLogger().Debugf("read all existing data \n")
 				break
 			}
 		}
 
 		if read_err != nil {
-			if read_err == io.EOF { // break out if reach to the file end
+			if read_err == io.EOF && // if file upload is done and read to eof, the chunk download should be done too.
+				l.isFileUploadingDone(curFilePath) {
 				break
 			}
 		}
@@ -103,9 +114,10 @@ func (l *FileDownloadHandler) serveDownload(w http.ResponseWriter, req *http.Req
 	}
 
 	// write the end of chunk
-        msg := []byte("0\r\n\r\n")
-        _, errpr := writer.Write(msg)
-        if errpr != nil {
-          panic(errpr)
-        }
+	end_sig := fmt.Sprintf("%x\r\n", 0)
+	msg := []byte(end_sig)
+	_, errpr := writer.Write(msg)
+	if errpr != nil {
+		panic(errpr)
+	}
 }
