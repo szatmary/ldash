@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -87,12 +86,7 @@ func (l *FileDownloadHandler) serveDownload(w http.ResponseWriter, req *http.Req
 			utils.GetDownloadLogger().Debugf("read %d bytes \n", bytesread)
 
 			if bytesread > 0 {
-				prefix := fmt.Sprintf("%x\r\n", bytesread)
-				init := []byte(prefix)
-				end := []byte("\r\n")
-				new_data := append(init, buffer...)
-				msg := append(new_data, end...)
-				_, errpr := writer.Write(msg)
+				_, errpr := writer.Write(buffer)
 				if errpr != nil {
 					panic(errpr)
 				}
@@ -111,13 +105,5 @@ func (l *FileDownloadHandler) serveDownload(w http.ResponseWriter, req *http.Req
 			}
 		}
 		time.Sleep(50 * time.Millisecond)
-	}
-
-	// write the end of chunk
-	end_sig := fmt.Sprintf("%x\r\n", 0)
-	msg := []byte(end_sig)
-	_, errpr := writer.Write(msg)
-	if errpr != nil {
-		panic(errpr)
 	}
 }
