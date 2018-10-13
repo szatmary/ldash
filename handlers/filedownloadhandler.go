@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"../utils"
-	"github.com/fujiwara/shapeio"
 )
 
 type FileDownloadHandler struct {
@@ -61,16 +60,7 @@ func (l *FileDownloadHandler) serveDownload(w http.ResponseWriter, req *http.Req
 
 	w.WriteHeader(http.StatusOK)
 
-	writer := shapeio.NewWriter(w)
-
-	if strings.HasSuffix(curFilePath, ".mpd") { // we don't do chunkced download for manifest
-		utils.GetDownloadLogger().Debugf("download manifest file \n")
-		io.Copy(writer, file)
-		return
-	}
-
 	bufferSize := 20480
-
 	buffer := make([]byte, bufferSize)
 	var read_err error
 	bytesread := 0
@@ -86,7 +76,7 @@ func (l *FileDownloadHandler) serveDownload(w http.ResponseWriter, req *http.Req
 			utils.GetDownloadLogger().Debugf("read %d bytes \n", bytesread)
 
 			if bytesread > 0 {
-				_, errpr := writer.Write(buffer)
+				_, errpr := w.Write(buffer[:bytesread])
 				if errpr != nil {
 					panic(errpr)
 				}
